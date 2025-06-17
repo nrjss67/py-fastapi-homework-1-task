@@ -18,7 +18,7 @@ class MovieBase(BaseModel):
     revenue: float
     country: str
 
-        
+
 class MovieDetailResponseSchema(MovieBase):
     pass
 
