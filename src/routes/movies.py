@@ -1,3 +1,4 @@
+import math
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
@@ -26,8 +27,8 @@ async def get_movies(
     result = await db.execute(select(MovieModel).offset(offset).limit(per_page))
     movies = result.scalars().all()
 
-    total_items = db.scalar(select(func.count()).select_from(MovieModel))
-    total_pages = total_items / per_page if total_items > 0 else 1
+    total_items = await db.scalar(select(func.count()).select_from(MovieModel))
+    total_pages = math.ceil(total_items / per_page) if total_items > 0 else 1
     prev_page = (
         f"/theater/movies/?page={page - 1}&per_page={per_page}" if page > 1 else None
     )
