@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db, MovieModel
@@ -26,7 +26,8 @@ async def get_movies(
     result = await db.execute(select(MovieModel).offset(offset).limit(per_page))
     movies = result.scalars().all()
 
-    total_pages = movies.__len__() / per_page if movies.__len__() > 0 else 1
+    total_items = db.scalar(select(func.count()).select_from(MovieModel))
+    total_pages = total_items / per_page if total_items > 0 else 1
     prev_page = (
         f"/theater/movies/?page={page - 1}&per_page={per_page}" if page > 1 else None
     )
@@ -43,7 +44,7 @@ async def get_movies(
         "prev_page": prev_page,
         "next_page": next_page,
         "total_pages": total_pages,
-        "total_items": movies.__len__(),
+        "total_items": total_items,
     }
 
 
